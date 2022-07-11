@@ -8,9 +8,6 @@ from sklearn.impute import SimpleImputer
 
 df = pd.read_csv("../data/SIS_Faculty-List.csv", skipinitialspace = True)
 
-#set unique identifiers for each row
-df['ID'].is_unique
-
 #rename columns
 new_names =  {'MAJOR TEACHING FIELD': 'Major Teaching Field',
               'DOCUMENT OTHER PROFESSIONAL CERTIFICATION CRITIERA Five Years Work Experience Teaching Excellence Professional Certifications': 'Relevant Experience',
@@ -28,15 +25,6 @@ df.replace({'ID': '0'}, {'ID': None}, inplace=True)
 df.dropna(subset=['ID',
                   'Name'], inplace=True)
 
-#impute missing values for Location, Report To, and Join Date
-imp_most_freq = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
-df['Location'] = imp_most_freq.fit_transform(df[['Location']]).ravel()
-df['Reports To'] = imp_most_freq.fit_transform(df[['Reports To']]).ravel()
-# Convert Join Date to datetime
-df['Join Date'] = pd.to_datetime(df['Join Date'])
-#Fill NaT with mean date
-df['Join Date'].fillna(value=df['Join Date'].mean(), inplace=True)
-
 #drop rows with duplication ID value
 df.drop_duplicates(subset=['ID'], inplace=True)
 
@@ -47,6 +35,15 @@ to_drop = ['Grade',
            'Divison',
            'Highest Qualification Level']
 df.drop(to_drop, inplace=True, axis=1)
+
+#impute missing values for Location, Report To, and Join Date
+imp_most_freq = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+df['Location'] = imp_most_freq.fit_transform(df[['Location']]).ravel()
+df['Reports To'] = imp_most_freq.fit_transform(df[['Reports To']]).ravel()
+# Convert Join Date to datetime
+df['Join Date'] = pd.to_datetime(df['Join Date'])
+#Fill NaT with mean date
+df['Join Date'].fillna(value=df['Join Date'].mean(), inplace=True)
 
 #drop columns with less than 90% content
 #todo/recommendation: calculate percentage full and apply to all
@@ -64,42 +61,15 @@ df["Major Teaching Field"] = [' '.join([spell(i) for i in str(x).split()]) for x
 df["Relevant Experience"] = [' '.join([spell(i) for i in str(x).split()]) for x in df['Relevant Experience']]
 df["Criteria"] = [' '.join([spell(i) for i in str(x).split()]) for x in df['Criteria']]
 
-#edit columns for ampersands
-spec_chars = ["&"]
-for char in spec_chars:
-    df['Criteria'] = df['Criteria'].str.replace(char, 'and')
-spec_chars = ["&"]
-for char in spec_chars:
-    df['Relevant Experience'] = df['Relevant Experience'].str.replace(char, 'and')
-spec_chars = ["&"]
-for char in spec_chars:
-    df['Major Teaching Field'] = df['Major Teaching Field'].str.replace(char, 'and')
-spec_chars = ["&"]
-for char in spec_chars:
-    df['Courses Taught'] = df['Courses Taught'].str.replace(char, 'and')
-spec_chars = ["&"]
-for char in spec_chars:
-    df['All Qualifications'] = df['All Qualifications'].str.replace(char, 'and')
-spec_chars = ["&"]
-for char in spec_chars:
-    df['Major'] = df['Major'].str.replace(char, 'and')
-
-#edit columns for forward slashes
-spec_chars = ["/"]
+#edit columns for special characters
+spec_chars = [" & ", "/"]
 for char in spec_chars:
     df['Criteria'] = df['Criteria'].str.replace(char, ' and ')
-spec_chars = ["/"]
-for char in spec_chars:
-    df['Highest Qualification'] = df['Highest Qualification'].str.replace(char, ' and ')
-spec_chars = ["/"]
-for char in spec_chars:
     df['Relevant Experience'] = df['Relevant Experience'].str.replace(char, ' and ')
-spec_chars = ["/"]
-for char in spec_chars:
-    df['Major'] = df['Major'].str.replace(char, ' and ')
-spec_chars = ["/"]
-for char in spec_chars:
     df['Major Teaching Field'] = df['Major Teaching Field'].str.replace(char, ' and ')
+    df['Courses Taught'] = df['Courses Taught'].str.replace(char, ' and ')
+    df['All Qualifications'] = df['All Qualifications'].str.replace(char, ' and ')
+    df['Major'] = df['Major'].str.replace(char, ' and ')
 
 #print result to new csv file
 df.to_csv('updated-SIS_Faculty-List.csv', encoding='utf-8')
