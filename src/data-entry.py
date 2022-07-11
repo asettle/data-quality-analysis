@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from autocorrect import Speller
+from sklearn.impute import SimpleImputer
 
 df = pd.read_csv("../data/SIS_Faculty-List.csv", skipinitialspace = True)
 
@@ -23,11 +24,18 @@ df.rename(columns=new_names, inplace=True)
 #convert value 0 to NaN in ID column so that it can be dropped if empty
 df.replace({'ID': '0'}, {'ID': None}, inplace=True)
 
-#drop rows with empty values
+#drop rows with empty values that can't be imputed
 df.dropna(subset=['ID',
-                  'Name',
-                  'Location',
-                  'Join Date'], inplace=True)
+                  'Name'], inplace=True)
+
+#impute missing values for Location, Report To, and Join Date
+imp_most_freq = SimpleImputer(missing_values=np.nan, strategy='most_frequent
+df['Location'] = imp_most_freq.fit_transform(df[['Location']]).ravel()
+df['Reports To'] = imp_most_freq.fit_transform(df[['Reports To']]).ravel()
+# Convert Join Date to datetime
+df['Join Date'] = pd.to_datetime(df['Join Date'])
+#Fill NaT with mean date
+df['Join Date'].fillna(value=df['Join Date'].mean(), inplace=True)
 
 #drop rows with duplication ID value
 df.drop_duplicates(subset=['ID'], inplace=True)
