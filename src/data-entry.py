@@ -29,7 +29,7 @@ df.dropna(subset=['ID',
                   'Name'], inplace=True)
 
 #impute missing values for Location, Report To, and Join Date
-imp_most_freq = SimpleImputer(missing_values=np.nan, strategy='most_frequent
+imp_most_freq = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
 df['Location'] = imp_most_freq.fit_transform(df[['Location']]).ravel()
 df['Reports To'] = imp_most_freq.fit_transform(df[['Reports To']]).ravel()
 # Convert Join Date to datetime
